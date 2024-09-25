@@ -77,7 +77,7 @@ const app = new Elysia()
   .listen(3002);
 
 console.log(
-  `Ứng dụng đang chạy tại http://${app.server?.hostname}:${app.server?.port}`
+  `The app should be running at http://${app.server?.hostname}:${app.server?.port}`
 );
 
 async function updateTransactionStatus(
