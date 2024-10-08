@@ -8,6 +8,9 @@ const TRANSACTION_COLLECTION = "transactions";
 const USER_COLLECTION = "users";
 
 const app = new Elysia()
+  .onError(({ error }) => {
+    console.log(error);
+  })
   .post(
     "/momo-payment-process",
     async ({ body, set }) => {
