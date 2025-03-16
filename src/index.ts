@@ -1,10 +1,13 @@
 import { Elysia, t } from "elysia";
 import { MongoClient, ObjectId } from "mongodb";
 import { PaymentStatus, PremiumDuration, Transaction } from "./Entity";
+import { randomBytes } from "crypto";
+import EmailService from "./EmailService";
 
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017";
 const DB_NAME = "test";
 const TRANSACTION_COLLECTION = "transactions";
+const GUEST_TOKEN_COLLECTION = "guest_tokens";
 const USER_COLLECTION = "users";
 
 const app = new Elysia()
@@ -48,6 +51,57 @@ const app = new Elysia()
           transactionInfo.orderId,
           PaymentStatus.SUCCESS
         );
+
+        if (transactionInfo.type === "guest_premium_subscription") {
+          const token = randomBytes(32).toString("hex");
+
+          let expiryDate: Date;
+          switch (transactionInfo.premiumDuration) {
+            case PremiumDuration.ONE_MONTH:
+              expiryDate = new Date(
+                new Date().getTime() + 30 * 24 * 60 * 60 * 1000
+              );
+              break;
+            case PremiumDuration.THREE_MONTH:
+              expiryDate = new Date(
+                new Date().getTime() + 90 * 24 * 60 * 60 * 1000
+              );
+              break;
+            case PremiumDuration.SIX_MONTH:
+              expiryDate = new Date(
+                new Date().getTime() + 180 * 24 * 60 * 60 * 1000
+              );
+              break;
+            case PremiumDuration.ONE_YEAR:
+              expiryDate = new Date(
+                new Date().getTime() + 365 * 24 * 60 * 60 * 1000
+              );
+              break;
+            default:
+              throw new Error("Thời hạn premium không hợp lệ");
+          }
+
+          await db.collection(GUEST_TOKEN_COLLECTION).insertOne({
+            token,
+            expiryDate,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+
+          const emailService = new EmailService();
+
+          emailService.sendMail({
+            from: "Himmel <noreply@meowsica.me>",
+            to: transactionInfo.email!,
+            subject: "Your Premium Access Token",
+            text: `Thank you for purchasing premium access! Your access token is: ${token}. You can use this token to access premium content until ${expiryDate.toLocaleString()}.`,
+            html: `<p>Thank you for purchasing premium access!</p><p>Your access token is: <strong>${token}</strong></p><p>You can use this token to access premium content until ${expiryDate.toLocaleString()}.</p><p>To use your token, visit: <a href="${
+              process.env.FE_URL
+            }/premium/access?token=${token}">${
+              process.env.FE_URL
+            }/premium/access?token=${token}</a></p>`,
+          });
+        }
 
         await updateUserPremiumStatus(
           db,

@@ -7,6 +7,7 @@ interface Transaction {
   type: TransactionType;
   orderInfo: string;
   status: PaymentStatus;
+  email?: string;
   orderId: string;
   premiumDuration?: PremiumDuration;
   authorId?: string | ObjectId;
@@ -23,6 +24,7 @@ enum PremiumDuration {
 
 enum TransactionType {
   PREMIUM_SUBSCRIPTION = "premium_subscription",
+  GUEST_PREMIUM_SUBSCRIPTION = "guest_premium_subscription",
   AUTHOR_PAYOUT = "author_payout",
 }
 
