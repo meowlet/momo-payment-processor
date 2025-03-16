@@ -101,6 +101,8 @@ const app = new Elysia()
               process.env.FE_URL
             }/premium/access?token=${token}</a></p>`,
           });
+
+          return;
         }
 
         await updateUserPremiumStatus(
