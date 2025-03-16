@@ -131,7 +131,7 @@ const app = new Elysia()
       }),
     }
   )
-  .listen(3002);
+  .listen(4002);
 
 console.log(
   `The app should be running at http://${app.server?.hostname}:${app.server?.port}`
