@@ -83,6 +83,7 @@ const app = new Elysia()
 
           await db.collection(GUEST_TOKEN_COLLECTION).insertOne({
             token,
+            email: transactionInfo.email,
             expiryDate,
             createdAt: new Date(),
             updatedAt: new Date(),
